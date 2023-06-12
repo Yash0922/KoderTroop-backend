@@ -6,22 +6,14 @@ const redis = require('redis');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const https = require('https');
-const caCert = fs.readFileSync('./cert.pem',"utf8");
+
 
 const app = express();
-// const agent = new https.Agent({
-//   ca: caCert
-// });
-const esClient = new Client({ node: 'https://localhost:9200', auth: {
-    username: 'elastic',
-    password: 'jJZ6IfaQysXFBJJz7QmJ'
-  },
-  ssl: {
-    ca: caCert
-  },
+
+const esClient = new Client({ node: 'http://localhost:9200'
 },
 );
-console.log(caCert)
+
 const redisClient = redis.createClient();
 
 // Connect to MongoDB
@@ -51,10 +43,16 @@ app.post('/tasks', async (req, res) => {
     await task.save();
 
     // Store task in ElasticSearch
-    await esClient.index({
+    await esClient.indices.create({
       index: 'tasks',
-      id: taskId,
-      body: { title, description }
+      body: {
+        mappings: {
+          properties: {
+            title: { type: 'text' },
+            description: { type: 'text' }
+          }
+        }
+      }
     });
 
     // Store task in Redis
@@ -83,6 +81,7 @@ app.get('/tasks', async (req, res) => {
 app.get('/tasks/search', async (req, res) => {
   try {
     const { query } = req.query;
+    await Task.find({ title: query });
 
     // Search tasks in ElasticSearch
     const { body } = await esClient.search({
@@ -93,6 +92,9 @@ app.get('/tasks/search', async (req, res) => {
         }
       }
     });
+     
+
+    // res.json({ tasksMongo });
 
     const tasks = body.hits.hits.map(hit => hit._source);
 
@@ -126,6 +128,7 @@ app.delete('/tasks/:taskId', async (req, res) => {
     res.status(500).json({ error: 'An error occurred' });
   }
 });
+
 
 app.listen(3000, () => {
   console.log('http://localhost:3000');
