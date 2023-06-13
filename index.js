@@ -4,8 +4,8 @@ const { v4: uuidv4 } = require('uuid');
 // const { Client } = require('@elastic/elasticsearch');
 // const redis = require('redis');
 const mongoose = require('mongoose');
-const fs = require('fs');
-const https = require('https');
+// const fs = require('fs');
+// const https = require('https');
 
 
 const app = express();
@@ -36,10 +36,19 @@ const app = express();
 // });
 
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://yashkumarpal987:Yash%4015182204@cluster0.ss532hp.mongodb.net/todo', { useNewUrlParser: true, useUnifiedTopology: true });
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+async function connectDatabase() {
 
+
+try{
+  await mongoose.connect('mongodb+srv://yashkumarpal987:Yash%4015182204@cluster0.ss532hp.mongodb.net/todo')
+
+  console.log('Connected to DB')
+
+}
+catch(e){
+  console.log("error is connnection",e);
+}
+}
 // Define task schema and model
 const taskSchema = new mongoose.Schema({
   _id: String,
@@ -93,7 +102,7 @@ app.post('/tasks', async (req, res) => {
     res.json({ message: 'Task created successfully',result: task});
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({'An error occurred': error  });
   }
 });
 
@@ -106,7 +115,7 @@ app.get('/tasks', async (req, res) => {
     
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({'An error occurred': error  });
   }
 });
 
@@ -137,7 +146,7 @@ console.log(result)
     res.json({ result: result});
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({ 'An error occurred': error});
   }
 });
 app.patch('/tasks/:taskId', async (req, res) => {
@@ -148,7 +157,7 @@ app.patch('/tasks/:taskId', async (req, res) => {
     const task = await Task.findById(taskId);
 
     if (!task) {
-      return res.status(404).json({ error: 'Task not found' });
+      return res.status(404).json({ 'Task not found':error  });
     }
 
     // Toggle the completion status
@@ -158,7 +167,7 @@ app.patch('/tasks/:taskId', async (req, res) => {
     res.json({ message: 'Task completion status toggled successfully', result: task });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({ 'An error occurred':error });
   }
 });
 
@@ -179,11 +188,21 @@ app.delete('/tasks/:taskId', async (req, res) => {
     res.json({ message: 'Task deleted successfully',result:result });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({ 'An error occurred' :error });
   }
 });
+app.get("/", (req,res)=>{
+  
+  res.send("<h1>API WorkSucessful</h1>")
+})
 
-
-app.listen(3001, () => {
-  console.log('http://localhost:3001');
-});
+const port = 8080;
+connectDatabase()
+.then(() => {
+    app.listen(port, (e) => {
+        if(e){
+            console.log("Server Error",e);
+        }
+        console.log(`Server listening on http://localhost:${port}`)
+    })
+})
