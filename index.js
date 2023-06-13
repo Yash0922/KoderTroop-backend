@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
-const { Client } = require('@elastic/elasticsearch');
+// const { Client } = require('@elastic/elasticsearch');
 // const redis = require('redis');
 const mongoose = require('mongoose');
 const fs = require('fs');
@@ -10,17 +10,17 @@ const https = require('https');
 
 const app = express();
 
-const esClient = new Client({ node: 'https://localhost:9200',
-auth: {
-  username: 'elastic',
-  password: 'GoiKGG8r+e+XeUY*4v3I',
-},
-tls:{
-  ca: fs.readFileSync('./http_ca.crt', 'utf8'),
-        rejectUnauthorized: true
-}
-},
-);
+// const esClient = new Client({ node: 'https://localhost:9200',
+// auth: {
+//   username: 'elastic',
+//   password: 'GoiKGG8r+e+XeUY*4v3I',
+// },
+// tls:{
+//   ca: fs.readFileSync('./http_ca.crt', 'utf8'),
+//         rejectUnauthorized: true
+// }
+// },
+// );
 
 // const redisClient = redis.createClient({ host: '127.0.0.1',
 // port: 6379,
